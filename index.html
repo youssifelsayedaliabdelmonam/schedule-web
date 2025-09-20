@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول المواد الدراسية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e3a5f;
+            --secondary-color: #007bff;
+            --background-color: #f4f7f6;
+            --container-bg: #fff;
+            --group-bg: #eaf1f7;
+            --border-color: #d1d9e6;
+            --item-bg: #e6f7ff;
+            --item-text: #005c99;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--background-color);
+            color: #333;
+            direction: rtl;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: transparent;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            border-bottom: 3px solid transparent;
+            font-weight: 700;
+        }
+
+        .tab-button.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+        }
+        
+        .tab-button:hover {
+            color: var(--secondary-color);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background-color: var(--group-bg);
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .control-group label, .input-group, .select-group {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .select-group {
+            margin-top: 10px;
+        }
+
+        .input-group, .select-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .input-group input[type="text"], .select-group select {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--container-bg);
+            cursor: pointer;
+        }
+
+        .input-group button, .add-to-schedule-btn {
+            padding: 8px 12px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-schedule-btn {
+            background-color: var(--primary-color);
+            margin: 10px auto 0;
+            display: block;
+        }
+
+        .input-group button:hover, .add-to-schedule-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .checkbox-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            background-color: var(--container-bg);
+        }
+
+        .checkbox-list label {
+            cursor: pointer;
+        }
+        
+        input[type="checkbox"] {
+            margin-left: 8px;
+            transform: scale(1.2);
+        }
+
+        .added-items {
+            margin-top: 20px;
+        }
+        
+        .added-items ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .added-items li {
+            background-color: #f0f4f8;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background-color: #f0f4f8;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .schedule-day {
+            background-color: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .day-name {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .schedule-item {
+            background-color: var(--item-bg);
+            color: var(--item-text);
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .no-class {
+            color: #888;
+            font-style: italic;
+        }
+
+        .generate-button, .back-button {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .back-button {
+            background-color: #6c757d;
+        }
+
+        .generate-button:hover {
+            background-color: #15293d;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .free-faculty-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .free-faculty-list li {
+            background-color: var(--group-bg);
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+        }
+        
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(30, 58, 95, 0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .success-popup.show {
+            opacity: 1;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .info-table th, .info-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        
+        .info-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .info-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title" id="main-title">الجدول الدراسي</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showPage('main-schedule-page')">إنشاء الجدول</button>
+            <button class="tab-button" onclick="showPage('faculty-page')">أعضاء هيئة التدريس</button>
+            <button class="tab-button" onclick="showPage('halls-page')">القاعات</button>
+        </div>
+
+        <!-- Main Schedule Page -->
+        <div id="main-schedule-page" class="page active">
+            <div class="controls">
+                <!-- Names -->
+                <div class="control-group">
+                    <h3>اسم الدكتور/ة</h3>
+                    <div class="input-group">
+                        <input type="text" id="name-input" placeholder="أدخل الاسم">
+                        <button onclick="addName()">أضف</button>
+                    </div>
+                    <div class="select-group">
+                        <label for="select-name">اختر اسم</label>
+                        <select id="select-name"></select>
+                    </div>
+                </div>
+
+                <!-- Courses -->
+                <div class="control-group">
+                    <h3>اسم المقرر</h3>
+                    <div class="input-group">
+                        <input type="text" id="course-input" placeholder="أدخل اسم المقرر">
+                        <button onclick="addCourse()">أضف</button>
+                    </div>
+                    <div class="select-group">
+                        <label for="select-course">اختر مقرر</label>
+                        <select id="select-course"></select>
+                    </div>
+                </div>
+
+                <!-- Halls -->
+                <div class="control-group">
+                    <h3>القاعات</h3>
+                    <div class="input-group">
+                        <input type="text" id="hall-input" placeholder="أدخل رقم القاعة">
+                        <button onclick="addHall()">أضف</button>
+                    </div>
+                    <div class="select-group">
+                        <label for="select-hall">اختر قاعة</label>
+                        <select id="select-hall"></select>
+                    </div>
+                </div>
+
+                <!-- Days & Periods -->
+                <div class="control-group">
+                    <h3>اليوم والفترة</h3>
+                    <div class="select-group">
+                        <label for="select-day">اختر اليوم</label>
+                        <select id="select-day"></select>
+                    </div>
+                    <div class="select-group">
+                        <label for="select-period">اختر الفترة</label>
+                        <select id="select-period"></select>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="add-to-schedule-btn" onclick="addScheduleEntry()">أضف الحصة إلى الجدول</button>
+            
+            <div id="added-entries-container" class="added-items" style="display: none;">
+                <h3>الحصص المضافة</h3>
+                <ul id="added-entries-list"></ul>
+            </div>
+            
+            <button class="generate-button" onclick="renderFinalSchedule()" style="display: none;" id="show-schedule-btn">عرض الجدول النهائي</button>
+
+            <div id="main-schedule-display" class="schedule-container" style="display: none;">
+                <h2>الجدول الزمني</h2>
+                <div class="schedule-grid"></div>
+            </div>
+        </div>
+        
+        <!-- Faculty Page -->
+        <div id="faculty-page" class="page">
+            <h2 class="page-title">أعضاء هيئة التدريس</h2>
+            <div class="controls">
+                <!-- Select to view a specific faculty's schedule (unchanged) -->
+                <div class="control-group">
+                    <h3>اختر دكتورًا لعرض جدوله</h3>
+                    <div class="select-group">
+                        <label for="faculty-select-name">اختر اسم</label>
+                        <select id="faculty-select-name"></select>
+                    </div>
+                </div>
+
+                <!-- NEW: Find faculty by course -->
+                <div class="control-group">
+                    <h3>البحث عن الدكتور بالمقرر</h3>
+                    <div class="checkbox-list" id="course-filter-container">
+                        <!-- Course checkboxes will be rendered here -->
+                    </div>
+                    <table id="faculty-by-course-table" class="info-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>اسم الدكتور</th>
+                                <th>المقرر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Modified: Find available faculty -->
+                <div class="control-group">
+                    <h3>البحث عن المتاحين</h3>
+                    <div class="checkbox-list">
+                        <label>اليوم:</label>
+                        <div id="day-filter-container"></div>
+                        <label>الفترة:</label>
+                        <div id="period-filter-container"></div>
+                    </div>
+                    <button class="generate-button" onclick="findFreeFaculty()">بحث عن المتاحين</button>
+                    <table id="available-faculty-table" class="info-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>اسم الدكتور المتاح</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="faculty-schedule-display" class="schedule-container" style="display: none;">
+                <h2>الجدول الزمني للدكتور <span id="faculty-name-display"></span></h2>
+                <div class="schedule-grid"></div>
+            </div>
+        </div>
+
+        <!-- Halls Page -->
+        <div id="halls-page" class="page">
+            <h2 class="page-title">القاعات</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <h3>اختر قاعة لعرض جدولها</h3>
+                    <div class="select-group">
+                        <label for="halls-select-hall">اختر قاعة</label>
+                        <select id="halls-select-hall"></select>
+                    </div>
+                </div>
+            </div>
+            <div id="hall-schedule-display" class="schedule-container" style="display: none;">
+                <h2>الجدول الزمني للقاعة <span id="hall-name-display"></span></h2>
+                <div class="schedule-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appData = {
+            names: [],
+            courses: [],
+            halls: [],
+            schedule: {}
+        };
+        const mainScheduleGrid = document.querySelector('#main-schedule-page .schedule-grid');
+        const facultyScheduleGrid = document.querySelector('#faculty-page .schedule-grid');
+        const hallScheduleGrid = document.querySelector('#halls-page .schedule-grid');
+        const addedEntriesList = document.getElementById('added-entries-list');
+        const mainScheduleDisplay = document.getElementById('main-schedule-display');
+        const showScheduleBtn = document.getElementById('show-schedule-btn');
+
+        // Initial Data Check
+        if (localStorage.getItem('appData')) {
+            appData = JSON.parse(localStorage.getItem('appData'));
+        }
+
+        const daysOfWeek = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+        const periods = ['الفترة الأولى', 'الفترة الثانية', 'الفترة الثالثة', 'الفترة الرابعة', 'الفترة الخامسة', 'الفترة السادسة', 'الفترة السابعة', 'الفترة الثامنة'];
+
+        function saveData() {
+            localStorage.setItem('appData', JSON.stringify(appData));
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showPage('${pageId}')"]`).classList.add('active');
+            updatePageContent(pageId);
+        }
+
+        function updatePageContent(pageId) {
+            if (pageId === 'main-schedule-page') {
+                populateSelects();
+                renderAddedEntries();
+            } else if (pageId === 'faculty-page') {
+                populateFacultySelect();
+                renderFreeFacultyFilters();
+                renderCourseFilters();
+            } else if (pageId === 'halls-page') {
+                populateHallsSelect();
+            }
+        }
+        
+        function showSuccessPopup(message) {
+            const popup = document.createElement('div');
+            popup.className = 'success-popup';
+            popup.textContent = message;
+            document.body.appendChild(popup);
+            setTimeout(() => {
+                popup.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                popup.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(popup);
+                }, 500);
+            }, 2000);
+        }
+
+        function addInputItem(input, dataKey, successMessage) {
+            const value = document.getElementById(input).value.trim();
+            if (value && !appData[dataKey].includes(value)) {
+                appData[dataKey].push(value);
+                document.getElementById(input).value = '';
+                saveData();
+                populateSelects();
+                updatePageContent('faculty-page'); // Update new filters
+                showSuccessPopup(successMessage);
+            }
+        }
+
+        function addName() {
+            addInputItem('name-input', 'names', 'تم إضافة الدكتور بنجاح!');
+        }
+
+        function addCourse() {
+            addInputItem('course-input', 'courses', 'تم إضافة المقرر بنجاح!');
+        }
+
+        function addHall() {
+            addInputItem('hall-input', 'halls', 'تم إضافة القاعة بنجاح!');
+        }
+
+        function populateSelects() {
+            const selects = {
+                'select-name': appData.names,
+                'select-course': appData.courses,
+                'select-hall': appData.halls,
+                'select-day': daysOfWeek.slice(0, 6), // Days from Saturday to Thursday
+                'select-period': periods
+            };
+
+            for (const id in selects) {
+                const selectElement = document.getElementById(id);
+                selectElement.innerHTML = '';
+                if(selects[id].length > 0) {
+                    selects[id].forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.textContent = item;
+                        selectElement.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = 'لا توجد خيارات';
+                    option.disabled = true;
+                    option.selected = true;
+                    selectElement.appendChild(option);
+                }
+            }
+        }
+
+        function addScheduleEntry() {
+            const name = document.getElementById('select-name').value;
+            const course = document.getElementById('select-course').value;
+            const day = document.getElementById('select-day').value;
+            const period = document.getElementById('select-period').value;
+            const hall = document.getElementById('select-hall').value;
+
+            if (!name || !course || !day || !period || !hall) {
+                showSuccessPopup('الرجاء اختيار جميع الحقول.');
+                return;
+            }
+
+            if (!appData.schedule[day]) {
+                appData.schedule[day] = {};
+            }
+            appData.schedule[day][period] = {
+                name: name,
+                course: course,
+                hall: hall
+            };
+
+            saveData();
+            renderAddedEntries();
+            showSuccessPopup('تم إضافة الحصة بنجاح!');
+            showScheduleBtn.style.display = 'block';
+        }
+        
+        function renderAddedEntries() {
+            addedEntriesList.innerHTML = '';
+            for (const day in appData.schedule) {
+                const dayEntries = appData.schedule[day];
+                for (const period in dayEntries) {
+                    const entry = dayEntries[period];
+                    const li = document.createElement('li');
+                    li.textContent = `يوم: ${day}, فترة: ${period}, المقرر: ${entry.course}, القاعة: ${entry.hall}, الدكتور: ${entry.name}`;
+                    addedEntriesList.appendChild(li);
+                }
+            }
+            if (Object.keys(appData.schedule).length > 0) {
+                document.getElementById('added-entries-container').style.display = 'block';
+            } else {
+                document.getElementById('added-entries-container').style.display = 'none';
+                showScheduleBtn.style.display = 'none';
+            }
+        }
+
+        function renderFinalSchedule() {
+            mainScheduleGrid.innerHTML = '';
+            const allDays = Object.keys(appData.schedule);
+
+            if (allDays.length === 0) {
+                mainScheduleDisplay.style.display = 'none';
+                showSuccessPopup('لا يوجد حصص لعرضها.');
+                return;
+            }
+            
+            mainScheduleDisplay.style.display = 'block';
+
+            daysOfWeek.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('schedule-day');
+
+                const dayName = document.createElement('div');
+                dayName.classList.add('day-name');
+                dayName.textContent = day;
+                dayDiv.appendChild(dayName);
+                
+                let hasClass = false;
+                if (appData.schedule[day]) {
+                    const sortedPeriods = Object.keys(appData.schedule[day]).sort((a, b) => periods.indexOf(a) - periods.indexOf(b));
+                    sortedPeriods.forEach(period => {
+                        const item = appData.schedule[day][period];
+                        const scheduleItem = document.createElement('div');
+                        scheduleItem.classList.add('schedule-item');
+                        scheduleItem.innerHTML = `<strong>${period}</strong><br>المقرر: ${item.course}<br>القاعة: ${item.hall}<br>الدكتور: ${item.name}`;
+                        dayDiv.appendChild(scheduleItem);
+                        hasClass = true;
+                    });
+                }
+                
+                if (!hasClass) {
+                    const noClass = document.createElement('div');
+                    noClass.classList.add('no-class');
+                    noClass.textContent = 'لا توجد حصص';
+                    dayDiv.appendChild(noClass);
+                }
+                
+                mainScheduleGrid.appendChild(dayDiv);
+            });
+        }
+        
+        function populateFacultySelect() {
+            const selectElement = document.getElementById('faculty-select-name');
+            selectElement.innerHTML = '';
+            appData.names.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                selectElement.appendChild(option);
+            });
+            if (appData.names.length > 0) {
+                selectElement.addEventListener('change', (e) => showFacultySchedule(e.target.value));
+                showFacultySchedule(appData.names[0]);
+            } else {
+                 const option = document.createElement('option');
+                 option.textContent = 'لا توجد أسماء';
+                 option.disabled = true;
+                 option.selected = true;
+                 selectElement.appendChild(option);
+                 document.getElementById('faculty-schedule-display').style.display = 'none';
+            }
+        }
+
+        function showFacultySchedule(selectedName) {
+            const facultySchedule = {};
+            for (const day in appData.schedule) {
+                for (const period in appData.schedule[day]) {
+                    if (appData.schedule[day][period].name === selectedName) {
+                        if (!facultySchedule[day]) {
+                            facultySchedule[day] = {};
+                        }
+                        facultySchedule[day][period] = appData.schedule[day][period];
+                    }
+                }
+            }
+            document.getElementById('faculty-name-display').textContent = selectedName;
+            renderSchedule(facultySchedule, facultyScheduleGrid);
+            document.getElementById('faculty-schedule-display').style.display = 'block';
+        }
+
+        function renderFreeFacultyFilters() {
+            document.getElementById('day-filter-container').innerHTML = '';
+            daysOfWeek.slice(0, 6).forEach(day => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="free-day" value="${day}"> ${day}`;
+                document.getElementById('day-filter-container').appendChild(label);
+            });
+            document.getElementById('period-filter-container').innerHTML = '';
+            periods.forEach(period => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="free-period" value="${period}"> ${period}`;
+                document.getElementById('period-filter-container').appendChild(label);
+            });
+        }
+
+        function findFreeFaculty() {
+            const selectedDays = Array.from(document.querySelectorAll('input[name="free-day"]:checked')).map(cb => cb.value);
+            const selectedPeriods = Array.from(document.querySelectorAll('input[name="free-period"]:checked')).map(cb => cb.value);
+            const availableFacultyTableBody = document.querySelector('#available-faculty-table tbody');
+            availableFacultyTableBody.innerHTML = ''; // Clear previous results
+            
+            const busyNames = new Set();
+            selectedDays.forEach(day => {
+                selectedPeriods.forEach(period => {
+                    if (appData.schedule[day] && appData.schedule[day][period]) {
+                        busyNames.add(appData.schedule[day][period].name);
+                    }
+                });
+            });
+
+            const allNames = new Set(appData.names);
+            const freeNames = [...allNames].filter(name => !busyNames.has(name));
+
+            if (freeNames.length > 0) {
+                document.getElementById('available-faculty-table').style.display = 'table';
+                freeNames.forEach(name => {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.textContent = name;
+                    tr.appendChild(td);
+                    availableFacultyTableBody.appendChild(tr);
+                });
+            } else {
+                document.getElementById('available-faculty-table').style.display = 'none';
+                showSuccessPopup('لا يوجد أعضاء هيئة تدريس متاحون في هذا الوقت.');
+            }
+        }
+
+        function renderCourseFilters() {
+            const container = document.getElementById('course-filter-container');
+            container.innerHTML = '';
+            appData.courses.forEach(course => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="course-filter" value="${course}" onchange="showFacultyByCourse()"> ${course}`;
+                container.appendChild(label);
+            });
+            // Clear the table on initial render
+            document.getElementById('faculty-by-course-table').style.display = 'none';
+            document.querySelector('#faculty-by-course-table tbody').innerHTML = '';
+        }
+
+        function showFacultyByCourse() {
+            const selectedCourses = Array.from(document.querySelectorAll('input[name="course-filter"]:checked')).map(cb => cb.value);
+            const facultyByCourseTableBody = document.querySelector('#faculty-by-course-table tbody');
+            facultyByCourseTableBody.innerHTML = ''; // Clear previous results
+
+            if (selectedCourses.length === 0) {
+                document.getElementById('faculty-by-course-table').style.display = 'none';
+                return;
+            }
+
+            const uniqueAssignments = new Set();
+            for (const day in appData.schedule) {
+                for (const period in appData.schedule[day]) {
+                    const entry = appData.schedule[day][period];
+                    if (selectedCourses.includes(entry.course)) {
+                        // Use a string key to ensure uniqueness of doctor-course pairs
+                        const key = `${entry.name}-${entry.course}`;
+                        if (!uniqueAssignments.has(key)) {
+                            uniqueAssignments.add(key);
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `<td>${entry.name}</td><td>${entry.course}</td>`;
+                            facultyByCourseTableBody.appendChild(tr);
+                        }
+                    }
+                }
+            }
+            
+            if (uniqueAssignments.size > 0) {
+                document.getElementById('faculty-by-course-table').style.display = 'table';
+            } else {
+                document.getElementById('faculty-by-course-table').style.display = 'none';
+                showSuccessPopup('لا يوجد دكاترة لهذه المقررات.');
+            }
+        }
+
+        function populateHallsSelect() {
+            const selectElement = document.getElementById('halls-select-hall');
+            selectElement.innerHTML = '';
+            appData.halls.forEach(hall => {
+                const option = document.createElement('option');
+                option.value = hall;
+                option.textContent = hall;
+                selectElement.appendChild(option);
+            });
+            if (appData.halls.length > 0) {
+                selectElement.addEventListener('change', (e) => showHallSchedule(e.target.value));
+                showHallSchedule(appData.halls[0]);
+            } else {
+                const option = document.createElement('option');
+                option.textContent = 'لا توجد قاعات';
+                option.disabled = true;
+                option.selected = true;
+                selectElement.appendChild(option);
+                document.getElementById('hall-schedule-display').style.display = 'none';
+            }
+        }
+
+        function showHallSchedule(selectedHall) {
+            const hallSchedule = {};
+            for (const day in appData.schedule) {
+                for (const period in appData.schedule[day]) {
+                    if (appData.schedule[day][period].hall === selectedHall) {
+                        if (!hallSchedule[day]) {
+                            hallSchedule[day] = {};
+                        }
+                        hallSchedule[day][period] = appData.schedule[day][period];
+                    }
+                }
+            }
+            document.getElementById('hall-name-display').textContent = selectedHall;
+            renderSchedule(hallSchedule, hallScheduleGrid);
+            document.getElementById('hall-schedule-display').style.display = 'block';
+        }
+
+        function renderSchedule(scheduleData, gridElement) {
+            gridElement.innerHTML = '';
+            const allDays = Object.keys(scheduleData);
+            
+            const daysToDisplay = daysOfWeek.slice(0, 6);
+
+            daysToDisplay.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('schedule-day');
+
+                const dayName = document.createElement('div');
+                dayName.classList.add('day-name');
+                dayName.textContent = day;
+                dayDiv.appendChild(dayName);
+
+                let hasClass = false;
+                if (scheduleData[day]) {
+                    const sortedPeriods = Object.keys(scheduleData[day]).sort((a, b) => periods.indexOf(a) - periods.indexOf(b));
+                    sortedPeriods.forEach(period => {
+                        const item = scheduleData[day][period];
+                        const scheduleItem = document.createElement('div');
+                        scheduleItem.classList.add('schedule-item');
+                        scheduleItem.innerHTML = `<strong>${period}</strong><br>المقرر: ${item.course}<br>القاعة: ${item.hall}<br>الدكتور: ${item.name}`;
+                        dayDiv.appendChild(scheduleItem);
+                        hasClass = true;
+                    });
+                }
+                
+                if (!hasClass) {
+                    const noClass = document.createElement('div');
+                    noClass.classList.add('no-class');
+                    noClass.textContent = 'لا توجد حصص';
+                    dayDiv.appendChild(noClass);
+                }
+                
+                gridElement.appendChild(dayDiv);
+            });
+        }
+
+        // Initial render
+        showPage('main-schedule-page');
+    </script>
+</body>
+</html>
